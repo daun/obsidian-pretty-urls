@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-pretty-urls",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "A plugin for Obsidian (https://obsidian.md) to improve display of raw URLs",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
