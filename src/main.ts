@@ -1,99 +1,118 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import {Plugin as BasePlugin, TFile} from "obsidian";
 
-// Remember to rename these classes and interfaces!
+import {DEFAULT_SETTINGS, PluginSettings, MainSettingTab} from "./settings";
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class Plugin extends BasePlugin {
+	settings: PluginSettings;
+
+	linkSelector: string = 'a[href*="://"]';
+	frontmatterLinkSelector: string = '.metadata-link-inner[data-href*="://"]';
 
 	async onload() {
 		await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
+		this.addSettingTab(new MainSettingTab(this.app, this));
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
+		this.registerMarkdownPostProcessor(this.processMarkdownLinks.bind(this));
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-				return false;
-			}
-		});
-
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
-		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
+		if (this.settings.formatMetadata) {
+			this.registerEvent(this.app.workspace.on('active-leaf-change', () => this.processMetadataLinks()))
+		}
 	}
 
-	onunload() {
-	}
+	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<PluginSettings>);
 	}
 
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
-}
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
+	processMarkdownLinks(el: HTMLElement) {
+		Array.from(el.querySelectorAll(this.linkSelector))
+			.filter((node) => this.isUrlOnlyLink(node))
+			.forEach((link) => this.formatLink(link));
 	}
 
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
+	async processMetadataLinks() {
+		// Requires promise/interval to make sure we run after Obsidian has rendered the frontmatter panel
+		// const activeFile = await this.awaitActiveFile();
+		const activeFile = this.app.workspace.getActiveFile();
+
+		console.log('Processing frontmatter', activeFile);
+
+		if (!activeFile) return;
+
+		// await new Promise((resolve) => setTimeout(resolve, 300));
+
+		const selector = `.metadata-property-value ${this.frontmatterLinkSelector}`;
+		Array.from(document.querySelectorAll(selector))
+			.filter((node) => this.isUrlOnlyMetadataLink(node))
+			.forEach((link) => {
+				console.log('Found frontmatter link node:', link);
+				this.formatMetadataLink(link)
+			});
 	}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+	isUrlOnlyLink(node: Node): node is HTMLAnchorElement {
+		return node instanceof HTMLAnchorElement
+			&& node.href.includes('://')
+			&& node.href === node.textContent
+			&& node.childElementCount === 0;
+	}
+
+	formatLink(node: HTMLAnchorElement): void {
+		node.textContent = this.prettyUrl(node.href);
+	}
+
+	isUrlOnlyMetadataLink(node: Node): node is HTMLDivElement {
+		return node instanceof HTMLDivElement
+			&& node.dataset.href !== undefined
+			&& node.dataset.href.includes('://')
+			&& node.dataset.href === node.textContent
+			&& node.childElementCount === 0;
+	}
+
+	formatMetadataLink(node: HTMLDivElement): void {
+		node.textContent = this.prettyUrl(node.dataset.href!);
+	}
+
+	prettyUrl(url: string): string {
+		url = url.replace(/^https?:\/\//i, '');
+
+		if (this.settings.stripWwwSubdomain) {
+			if (this.settings.stripWwwPlusSubdomain) {
+				url = url.replace(/^www\d?\./i, '');
+			} else {
+				url = url.replace(/^www\./i, '');
+			}
+		}
+
+		if (this.settings.stripMobileSubdomain) {
+			url = url.replace(/^(m|mobile)\./i, '');
+		}
+
+		if (this.settings.stripAmpSubdomain) {
+			url = url.replace(/^(amp|wap)\./i, '');
+		}
+
+		return url;
+	}
+
+	awaitActiveFile(timeout: number = 400): Promise<TFile | null> {
+		return new Promise((resolve) => {
+			const checkActiveFile = () => {
+				const file = this.app.workspace.getActiveFile();
+				if (file) {
+					resolve(file);
+				} else {
+					setTimeout(checkActiveFile, 50);
+				}
+			};
+			checkActiveFile();
+			setTimeout(() => resolve(null), timeout);
+		});
 	}
 }
