@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-pretty-urls",
 	"version": "1.0.0",
-	"description": "A plugin for Obsidian (https://obsidian.md) to improve display of raw URLs",
+	"description": "A plugin for Obsidian to improve display of URLs in reading view",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
