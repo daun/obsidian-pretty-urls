@@ -1,4 +1,6 @@
-import {App, PluginSettingTab, Setting, SettingGroup} from "obsidian";
+/* eslint-disable @typescript-eslint/no-misused-promises */
+
+import {App, PluginSettingTab, SettingGroup} from "obsidian";
 import Plugin from "./main";
 
 export interface PluginSettings {

@@ -41,8 +41,6 @@ export default class Plugin extends BasePlugin {
 		// const activeFile = await this.awaitActiveFile();
 		const activeFile = this.app.workspace.getActiveFile();
 
-		console.log('Processing frontmatter', activeFile);
-
 		if (!activeFile) return;
 
 		// await new Promise((resolve) => setTimeout(resolve, 300));
@@ -50,10 +48,7 @@ export default class Plugin extends BasePlugin {
 		const selector = `.metadata-property-value ${this.frontmatterLinkSelector}`;
 		Array.from(document.querySelectorAll(selector))
 			.filter((node) => this.isUrlOnlyMetadataLink(node))
-			.forEach((link) => {
-				console.log('Found frontmatter link node:', link);
-				this.formatMetadataLink(link)
-			});
+			.forEach((link) => this.formatMetadataLink(link));
 	}
 
 	isUrlOnlyLink(node: Node): node is HTMLAnchorElement {
