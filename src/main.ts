@@ -37,13 +37,8 @@ export default class Plugin extends BasePlugin {
 	}
 
 	async processMetadataLinks() {
-		// Requires promise/interval to make sure we run after Obsidian has rendered the frontmatter panel
-		// const activeFile = await this.awaitActiveFile();
 		const activeFile = this.app.workspace.getActiveFile();
-
 		if (!activeFile) return;
-
-		// await new Promise((resolve) => setTimeout(resolve, 300));
 
 		const selector = `.metadata-property-value ${this.frontmatterLinkSelector}`;
 		Array.from(document.querySelectorAll(selector))
