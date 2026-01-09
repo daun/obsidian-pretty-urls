@@ -36,7 +36,7 @@ export default class Plugin extends BasePlugin {
 			.forEach((link) => this.formatLink(link));
 	}
 
-	async processMetadataLinks() {
+	processMetadataLinks() {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (!activeFile) return;
 
