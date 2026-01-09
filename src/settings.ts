@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-
 import {App, PluginSettingTab, SettingGroup} from "obsidian";
 import Plugin from "./main";
 
