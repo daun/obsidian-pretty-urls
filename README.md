@@ -13,11 +13,13 @@ unchanged.
 
 **Before**
 
-> See [https://www.example.net/some/page](https://www.example.net) for details
+> Watch [https://www.youtube.com/watch?v=3C1Gnxhfok0](https://www.youtube.com/watch?v=3C1Gnxhfok0)  
+> and read [https://m.wikipedia.org/wiki/Enshittification](https://m.wikipedia.org/wiki/Enshittification)
 
 **After**
 
-> See [example.net/some/page](https://www.example.net) for details
+> Watch [youtube.com/watch?v=3C1Gnxhfok0](https://www.youtube.com/watch?v=3C1Gnxhfok0)  
+> and read [wikipedia.org/wiki/Enshittification](https://m.wikipedia.org/wiki/Enshittification)
 
 ## Features
 
