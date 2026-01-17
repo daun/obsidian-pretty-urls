@@ -27,3 +27,7 @@ unchanged.
 - **Strip www subdomain**: Remove `www.`
 - **Strip mobile subdomain**: Remove `m.` and `mobile.`
 - **Strip amp subdomain**: Remove `amp.`
+
+## License
+
+[MIT](https://opensource.org/licenses/MIT)
