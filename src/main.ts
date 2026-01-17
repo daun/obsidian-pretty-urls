@@ -1,6 +1,7 @@
 import {Plugin as BasePlugin, TFile} from "obsidian";
 
 import {DEFAULT_SETTINGS, PluginSettings, MainSettingTab} from "./settings";
+import {prettyUrl, isExternalUrl} from "./formatter";
 
 export default class Plugin extends BasePlugin {
 	settings: PluginSettings;
@@ -48,47 +49,25 @@ export default class Plugin extends BasePlugin {
 
 	isUrlOnlyLink(node: Node): node is HTMLAnchorElement {
 		return node instanceof HTMLAnchorElement
-			&& node.href.includes('://')
+			&& isExternalUrl(node.href)
 			&& node.href === node.textContent
 			&& node.childElementCount === 0;
 	}
 
 	formatLink(node: HTMLAnchorElement): void {
-		node.textContent = this.prettyUrl(node.href);
+		node.textContent = prettyUrl(node.href, this.settings);
 	}
 
 	isUrlOnlyMetadataLink(node: Node): node is HTMLDivElement {
 		return node instanceof HTMLDivElement
 			&& node.dataset.href !== undefined
-			&& node.dataset.href.includes('://')
+			&& isExternalUrl(node.dataset.href)
 			&& node.dataset.href === node.textContent
 			&& node.childElementCount === 0;
 	}
 
 	formatMetadataLink(node: HTMLDivElement): void {
-		node.textContent = this.prettyUrl(node.dataset.href!);
-	}
-
-	prettyUrl(url: string): string {
-		url = url.replace(/^https?:\/\//i, '');
-
-		if (this.settings.stripWwwSubdomain) {
-			if (this.settings.stripWwwPlusSubdomain) {
-				url = url.replace(/^www\d?\./i, '');
-			} else {
-				url = url.replace(/^www\./i, '');
-			}
-		}
-
-		if (this.settings.stripMobileSubdomain) {
-			url = url.replace(/^(m|mobile)\./i, '');
-		}
-
-		if (this.settings.stripAmpSubdomain) {
-			url = url.replace(/^(amp|wap)\./i, '');
-		}
-
-		return url;
+		node.textContent = prettyUrl(node.dataset.href!, this.settings);
 	}
 
 	awaitActiveFile(timeout: number = 400): Promise<TFile | null> {
