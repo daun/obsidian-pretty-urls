@@ -31,6 +31,9 @@ export function prettyUrl(url: string, options: FormatterOptions = DEFAULT_FORMA
 		url = url.replace(/^(amp|wap)\./i, '');
 	}
 
+	// Strip trailing slash from path-less URLs (e.g., "example.com/" -> "example.com")
+	url = url.replace(/^([^/]+)\/$/, '$1');
+
 	return url;
 }
 

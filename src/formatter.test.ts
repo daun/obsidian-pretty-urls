@@ -175,6 +175,16 @@ describe('prettyUrl', () => {
 		it('handles ftp:// and other protocols (does not strip)', () => {
 			expect(prettyUrl('ftp://example.com')).toBe('ftp://example.com');
 		});
+
+		it('strips trailing slash from path-less URLs', () => {
+			expect(prettyUrl('https://example.com/')).toBe('example.com');
+			expect(prettyUrl('https://www.example.com/')).toBe('example.com');
+		});
+
+		it('preserves trailing slash on URLs with paths', () => {
+			expect(prettyUrl('https://example.com/path/')).toBe('example.com/path/');
+			expect(prettyUrl('https://example.com/path/to/page/')).toBe('example.com/path/to/page/');
+		});
 	});
 });
 
