@@ -1,12 +1,11 @@
 import {Plugin as BasePlugin, TFile} from "obsidian";
 
 import {DEFAULT_SETTINGS, PluginSettings, MainSettingTab} from "./settings";
+import {prettyUrl} from "./formatter";
+import {LINK_SELECTOR, METADATA_LINK_SELECTOR, isUrlOnlyLink, isUrlOnlyMetadataLink} from "./detector";
 
 export default class Plugin extends BasePlugin {
 	settings: PluginSettings;
-
-	linkSelector: string = 'a[href*="://"]';
-	frontmatterLinkSelector: string = '.metadata-link-inner[data-href*="://"]';
 
 	async onload() {
 		await this.loadSettings();
@@ -31,8 +30,8 @@ export default class Plugin extends BasePlugin {
 	}
 
 	processMarkdownLinks(el: HTMLElement) {
-		Array.from(el.querySelectorAll(this.linkSelector))
-			.filter((node) => this.isUrlOnlyLink(node))
+		Array.from(el.querySelectorAll(LINK_SELECTOR))
+			.filter(isUrlOnlyLink)
 			.forEach((link) => this.formatLink(link));
 	}
 
@@ -40,55 +39,18 @@ export default class Plugin extends BasePlugin {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (!activeFile) return;
 
-		const selector = `.metadata-property-value ${this.frontmatterLinkSelector}`;
+		const selector = `.metadata-property-value ${METADATA_LINK_SELECTOR}`;
 		Array.from(document.querySelectorAll(selector))
-			.filter((node) => this.isUrlOnlyMetadataLink(node))
+			.filter(isUrlOnlyMetadataLink)
 			.forEach((link) => this.formatMetadataLink(link));
 	}
 
-	isUrlOnlyLink(node: Node): node is HTMLAnchorElement {
-		return node instanceof HTMLAnchorElement
-			&& node.href.includes('://')
-			&& node.href === node.textContent
-			&& node.childElementCount === 0;
-	}
-
 	formatLink(node: HTMLAnchorElement): void {
-		node.textContent = this.prettyUrl(node.href);
-	}
-
-	isUrlOnlyMetadataLink(node: Node): node is HTMLDivElement {
-		return node instanceof HTMLDivElement
-			&& node.dataset.href !== undefined
-			&& node.dataset.href.includes('://')
-			&& node.dataset.href === node.textContent
-			&& node.childElementCount === 0;
+		node.textContent = prettyUrl(node.href, this.settings);
 	}
 
 	formatMetadataLink(node: HTMLDivElement): void {
-		node.textContent = this.prettyUrl(node.dataset.href!);
-	}
-
-	prettyUrl(url: string): string {
-		url = url.replace(/^https?:\/\//i, '');
-
-		if (this.settings.stripWwwSubdomain) {
-			if (this.settings.stripWwwPlusSubdomain) {
-				url = url.replace(/^www\d?\./i, '');
-			} else {
-				url = url.replace(/^www\./i, '');
-			}
-		}
-
-		if (this.settings.stripMobileSubdomain) {
-			url = url.replace(/^(m|mobile)\./i, '');
-		}
-
-		if (this.settings.stripAmpSubdomain) {
-			url = url.replace(/^(amp|wap)\./i, '');
-		}
-
-		return url;
+		node.textContent = prettyUrl(node.dataset.href!, this.settings);
 	}
 
 	awaitActiveFile(timeout: number = 400): Promise<TFile | null> {
