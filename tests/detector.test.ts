@@ -3,7 +3,7 @@
  */
 /* eslint-disable @microsoft/sdl/no-inner-html */
 import {describe, it, expect} from 'vitest';
-import {isUrlOnlyLink, isUrlOnlyMetadataLink, LINK_SELECTOR, METADATA_LINK_SELECTOR} from './detector';
+import {isUrlOnlyLink, isUrlOnlyMetadataLink, LINK_SELECTOR, METADATA_LINK_SELECTOR} from '../src/detector';
 
 function createAnchor(href: string, textContent: string): HTMLAnchorElement {
 	const anchor = document.createElement('a');

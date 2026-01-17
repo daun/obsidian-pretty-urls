@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest';
-import {prettyUrl, isExternalUrl, FormatterOptions, DEFAULT_FORMATTER_OPTIONS} from './formatter';
+import {prettyUrl, isExternalUrl, FormatterOptions, DEFAULT_FORMATTER_OPTIONS} from '../src/formatter';
 
 describe('prettyUrl', () => {
 	describe('protocol stripping', () => {
