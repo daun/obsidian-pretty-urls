@@ -5,7 +5,7 @@ import {prettyUrl} from "./formatter";
 import {LINK_SELECTOR, METADATA_LINK_SELECTOR, isUrlOnlyLink, isUrlOnlyMetadataLink} from "./detector";
 
 export default class Plugin extends BasePlugin {
-	settings: PluginSettings;
+	settings!: PluginSettings;
 
 	async onload() {
 		await this.loadSettings();
