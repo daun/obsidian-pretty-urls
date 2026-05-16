@@ -1,4 +1,4 @@
-import {App, PluginSettingTab, SettingGroup} from "obsidian";
+import {App, PluginSettingTab, SettingGroup, sanitizeHTMLToDom} from "obsidian";
 import Plugin from "./main";
 
 export interface PluginSettings {
@@ -93,6 +93,6 @@ export class MainSettingTab extends PluginSettingTab {
 	}
 
 	format(html: string): DocumentFragment {
-		return document.createRange().createContextualFragment(html);
+		return sanitizeHTMLToDom(html);
 	}
 }

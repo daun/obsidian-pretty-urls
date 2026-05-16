@@ -40,7 +40,7 @@ export default class Plugin extends BasePlugin {
 		if (!activeFile) return;
 
 		const selector = `.metadata-property-value ${METADATA_LINK_SELECTOR}`;
-		Array.from(document.querySelectorAll(selector))
+		Array.from(activeDocument.querySelectorAll(selector))
 			.filter(isUrlOnlyMetadataLink)
 			.forEach((link) => this.formatMetadataLink(link));
 	}
@@ -60,11 +60,11 @@ export default class Plugin extends BasePlugin {
 				if (file) {
 					resolve(file);
 				} else {
-					setTimeout(checkActiveFile, 50);
+					window.setTimeout(checkActiveFile, 50);
 				}
 			};
 			checkActiveFile();
-			setTimeout(() => resolve(null), timeout);
+			window.setTimeout(() => resolve(null), timeout);
 		});
 	}
 }
