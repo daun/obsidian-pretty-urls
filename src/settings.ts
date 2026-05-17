@@ -1,6 +1,6 @@
-import {App, PluginSettingTab, Setting, SettingGroup, sanitizeHTMLToDom} from "obsidian";
+import {App, PluginSettingTab, Setting, SettingGroup, ToggleComponent, sanitizeHTMLToDom, setIcon, setTooltip} from "obsidian";
 import Plugin from "./main";
-import {LabelRule, DEFAULT_LABEL_RULES, compileRule, looksExpensive} from "./labels";
+import {LabelRule, DEFAULT_LABEL_RULES, looksExpensive} from "./labels";
 
 export interface PluginSettings {
 	stripWwwSubdomain: boolean;
@@ -36,19 +36,27 @@ export class MainSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new SettingGroup(containerEl)
-			.setHeading('Hide protocol')
+			.setHeading('Formatting')
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>https:</kbd>'))
-				.setDesc('Always enabled')
+				.setName('Format links in properties panel')
+				.addToggle(text => (text)
+					.setValue(this.plugin.settings.formatMetadata)
+					.onChange(async (value) => {
+						this.plugin.settings.formatMetadata = value;
+						await this.plugin.saveSettings();
+					}))
+			})
+
+		new SettingGroup(containerEl)
+			.setHeading('Pretty URLs')
+			.addSetting((setting) => { setting
+				.setName(this.format('Hide protocol → <kbd>https:</kbd>'))
 				.addToggle(toggle => (toggle)
 					.setDisabled(true)
 					.setValue(true))
 			})
-
-		new SettingGroup(containerEl)
-			.setHeading('Hide subdomains')
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>www.</kbd>'))
+				.setName(this.format('Hide generic subdomains → <kbd>www.</kbd>'))
 				.addToggle(toggle => (toggle)
 					.setValue(this.plugin.settings.stripWwwSubdomain)
 					.onChange(async (value) => {
@@ -57,7 +65,7 @@ export class MainSettingTab extends PluginSettingTab {
 					}))
 			})
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>www1.</kbd> + <kbd>www2.</kbd>'))
+				.setName(this.format('Hide generic subdomains → <kbd>www1.</kbd> / <kbd>www2.</kbd>'))
 				.addToggle(text => (text)
 					.setValue(this.plugin.settings.stripWwwPlusSubdomain)
 					.onChange(async (value) => {
@@ -66,7 +74,7 @@ export class MainSettingTab extends PluginSettingTab {
 					}))
 			})
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>m.</kbd> + <kbd>mobile.</kbd>'))
+				.setName(this.format('Hide mobile subdomains → <kbd>m.</kbd> / <kbd>mobile.</kbd>'))
 				.addToggle(text => (text)
 					.setValue(this.plugin.settings.stripMobileSubdomain)
 					.onChange(async (value) => {
@@ -75,7 +83,7 @@ export class MainSettingTab extends PluginSettingTab {
 					}))
 			})
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>amp.</kbd> + <kbd>wap.</kbd>'))
+				.setName(this.format('Hide deprecated subdomains → <kbd>amp.</kbd> / <kbd>wap.</kbd>'))
 				.addToggle(text => (text)
 					.setValue(this.plugin.settings.stripAmpSubdomain)
 					.onChange(async (value) => {
@@ -83,27 +91,12 @@ export class MainSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}))
 			})
-
-		new SettingGroup(containerEl)
-			.setHeading('Hide parts')
 			.addSetting((setting) => { setting
-				.setName(this.format('<kbd>#anchor</kbd>'))
+				.setName(this.format('Hide scroll anchors → <kbd>#heading</kbd>'))
 				.addToggle(toggle => (toggle)
 					.setValue(this.plugin.settings.stripAnchor)
 					.onChange(async (value) => {
 						this.plugin.settings.stripAnchor = value;
-						await this.plugin.saveSettings();
-					}))
-			})
-
-		new SettingGroup(containerEl)
-			.setHeading('Properties')
-			.addSetting((setting) => { setting
-				.setName(this.format('Format links in note properties'))
-				.addToggle(text => (text)
-					.setValue(this.plugin.settings.formatMetadata)
-					.onChange(async (value) => {
-						this.plugin.settings.formatMetadata = value;
 						await this.plugin.saveSettings();
 					}))
 			})
@@ -114,19 +107,34 @@ export class MainSettingTab extends PluginSettingTab {
 	displayLabelRules(containerEl: HTMLElement): void {
 		const rules = this.plugin.settings.labelRules;
 		const group = new SettingGroup(containerEl)
-			.setHeading('Custom labels')
+			.setHeading('Custom Labels')
 			.addSetting((setting) => {
-				setting.setDesc('Define regex rules to reformat the visible label of links. Rules are applied in order: the first matching rule wins.');
+				setting.setDesc('Define regex rules to reformat the visible label of links. The first matching rule wins.');
 			});
 
 		for (let i = 0; i < rules.length; i++) {
 			const rule = rules[i];
 			if (!rule) continue;
 			group.addSetting((setting) => {
+				let toggleRef!: ToggleComponent;
+				let statusEl!: HTMLElement;
+
+				const syncState = async (pattern: string, replacement: string) => {
+					const hasContent = pattern.trim() !== '' && replacement.trim() !== '';
+					if (!hasContent && rule.enabled) {
+						rule.enabled = false;
+						toggleRef.setValue(false);
+					}
+					toggleRef.setDisabled(!hasContent);
+					updateStatusIcon(statusEl, pattern);
+					await this.plugin.saveSettings();
+				};
+
 				setting.infoEl?.addClass('pretty-urls-rule-info');
 				setting
 					.setName(`#${i + 1}`)
 					.addToggle(toggle => {
+						toggleRef = toggle;
 						toggle
 							.setValue(rule.enabled)
 							.setTooltip('Enable rule')
@@ -141,8 +149,7 @@ export class MainSettingTab extends PluginSettingTab {
 							.setValue(rule.pattern)
 							.onChange(async (value) => {
 								rule.pattern = value;
-								await this.plugin.saveSettings();
-								validatePattern(setting, value);
+								await syncState(value, rule.replacement);
 							});
 						text.inputEl.setAttribute('autocapitalize', 'off');
 						text.inputEl.setAttribute('autocorrect', 'off');
@@ -155,12 +162,18 @@ export class MainSettingTab extends PluginSettingTab {
 							.setValue(rule.replacement)
 							.onChange(async (value) => {
 								rule.replacement = value;
-								await this.plugin.saveSettings();
+								await syncState(rule.pattern, value);
 							});
 						text.inputEl.setAttribute('autocapitalize', 'off');
 						text.inputEl.setAttribute('autocorrect', 'off');
 						text.inputEl.setAttribute('spellcheck', 'false');
 						text.inputEl.addClass('pretty-urls-input', 'pretty-urls-replacement-input');
+					})
+					.then(s => {
+						statusEl = s.controlEl.createSpan({ cls: 'pretty-urls-status-icon' });
+						const hasContent = rule.pattern.trim() !== '' && rule.replacement.trim() !== '';
+						toggleRef.setDisabled(!hasContent);
+						updateStatusIcon(statusEl, rule.pattern);
 					})
 					.addExtraButton(button => {
 						button
@@ -197,8 +210,6 @@ export class MainSettingTab extends PluginSettingTab {
 							});
 					});
 
-				// Apply initial validation state
-				validatePattern(setting, rule.pattern);
 			});
 		}
 
@@ -214,7 +225,7 @@ export class MainSettingTab extends PluginSettingTab {
 								id: crypto.randomUUID(),
 								pattern: '',
 								replacement: '',
-								enabled: true,
+								enabled: false,
 							});
 							await this.plugin.saveSettings();
 							this.display();
@@ -237,25 +248,35 @@ function swapRules(rules: LabelRule[], a: number, b: number): void {
 	rules[b] = tmp;
 }
 
-function validatePattern(setting: Setting, pattern: string): void {
-	if (!pattern) {
-		setting.settingEl.removeClass('mod-warning');
-		setting.setDesc('');
+function updateStatusIcon(statusEl: HTMLElement, pattern: string): void {
+	statusEl.classList.remove(
+		'pretty-urls-status-empty',
+		'pretty-urls-status-valid',
+		'pretty-urls-status-warning',
+		'pretty-urls-status-invalid',
+	);
+
+	if (!pattern.trim()) {
+		setIcon(statusEl, 'circle-help');
+		statusEl.classList.add('pretty-urls-status-empty');
+		setTooltip(statusEl, '');
 		return;
 	}
+
 	try {
-		compileRule(pattern);
-		const re = compileRule(pattern);
-		if (re === null) throw new Error('Invalid pattern');
+		new RegExp(pattern, 'i');
 		if (looksExpensive(pattern)) {
-			setting.settingEl.addClass('mod-warning');
-			setting.setDesc('This pattern may cause slow performance on long urls');
+			setIcon(statusEl, 'triangle-alert');
+			statusEl.classList.add('pretty-urls-status-warning');
+			setTooltip(statusEl, 'This pattern may cause slow performance on long urls');
 		} else {
-			setting.settingEl.removeClass('mod-warning');
-			setting.setDesc('');
+			setIcon(statusEl, 'circle-check');
+			statusEl.classList.add('pretty-urls-status-valid');
+			setTooltip(statusEl, 'Valid regex');
 		}
 	} catch (e) {
-		setting.settingEl.addClass('mod-warning');
-		setting.setDesc(`Invalid pattern: ${(e as Error).message}`);
+		setIcon(statusEl, 'circle-alert');
+		statusEl.classList.add('pretty-urls-status-invalid');
+		setTooltip(statusEl, (e as Error).message);
 	}
 }
