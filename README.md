@@ -28,6 +28,18 @@ unchanged.
 - **Strip mobile subdomain**: Remove `m.` and `mobile.`
 - **Strip amp subdomain**: Remove `amp.`
 
+## Installation
+
+1. Open **Settings → Community plugins** in Obsidian.
+2. Select **Browse** and search for **Pretty URLs**.
+3. Select **Install**, then **Enable**.
+
+## Usage
+
+No configuration needed — the plugin works automatically. Open any note in
+[reading view](https://help.obsidian.md/edit-and-read#Reading+view) and URLs will be
+displayed in their cleaned-up form.
+
 ## License
 
 [MIT](https://opensource.org/licenses/MIT)
