@@ -119,6 +119,40 @@ describe('prettyUrl', () => {
 		});
 	});
 
+	describe('anchor stripping', () => {
+		const withAnchor: FormatterOptions = {...DEFAULT_FORMATTER_OPTIONS, stripAnchor: true};
+		const withoutAnchor: FormatterOptions = {...DEFAULT_FORMATTER_OPTIONS, stripAnchor: false};
+
+		it('strips anchor from a plain URL', () => {
+			expect(prettyUrl('https://example.com#section', withAnchor)).toBe('example.com');
+		});
+
+		it('strips anchor from a URL with a path', () => {
+			expect(prettyUrl('https://www.example.net/products#top', withAnchor)).toBe('example.net/products');
+		});
+
+		it('strips anchor from a URL with query params', () => {
+			expect(prettyUrl('https://example.com/page?q=1#results', withAnchor)).toBe('example.com/page?q=1');
+		});
+
+		it('strips anchor that contains special characters', () => {
+			expect(prettyUrl('https://example.com/page#section-2_extra', withAnchor)).toBe('example.com/page');
+		});
+
+		it('leaves URL unchanged when anchor is absent', () => {
+			expect(prettyUrl('https://example.com/page', withAnchor)).toBe('example.com/page');
+		});
+
+		it('preserves fragment identifiers when disabled (default)', () => {
+			expect(prettyUrl('https://example.com#section', withoutAnchor)).toBe('example.com#section');
+			expect(prettyUrl('https://example.com#section')).toBe('example.com#section');
+		});
+
+		it('strips trailing slash after anchor removal on path-less URLs', () => {
+			expect(prettyUrl('https://example.com/#section', withAnchor)).toBe('example.com');
+		});
+	});
+
 	describe('combined stripping', () => {
 		it('strips www and protocol together', () => {
 			expect(prettyUrl('https://www.example.com/page')).toBe('example.com/page');
@@ -130,6 +164,7 @@ describe('prettyUrl', () => {
 				stripWwwPlusSubdomain: false,
 				stripMobileSubdomain: false,
 				stripAmpSubdomain: false,
+				stripAnchor: false,
 			};
 			expect(prettyUrl('https://www.example.com', options)).toBe('www.example.com');
 			expect(prettyUrl('https://m.example.com', options)).toBe('m.example.com');

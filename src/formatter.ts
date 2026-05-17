@@ -6,6 +6,7 @@ export interface FormatterOptions {
 	stripMobileSubdomain: boolean;
 	stripAmpSubdomain: boolean;
 	labelRules?: LabelRule[];
+	stripAnchor: boolean;
 }
 
 export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
@@ -13,6 +14,7 @@ export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
 	stripWwwPlusSubdomain: true,
 	stripMobileSubdomain: true,
 	stripAmpSubdomain: true,
+	stripAnchor: false,
 };
 
 export function prettyUrl(url: string, options: FormatterOptions = DEFAULT_FORMATTER_OPTIONS): string {
@@ -32,6 +34,10 @@ export function prettyUrl(url: string, options: FormatterOptions = DEFAULT_FORMA
 
 	if (options.stripAmpSubdomain) {
 		url = url.replace(/^(amp|wap)\./i, '');
+	}
+
+	if (options.stripAnchor) {
+		url = url.replace(/#.*$/, '');
 	}
 
 	// Strip trailing slash from path-less URLs (e.g., "example.com/" -> "example.com")
