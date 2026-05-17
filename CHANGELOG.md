@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.3
+
+- Add installation and usage instructions
+
 ## 1.2.2
 
 - Fix automated release provenance
