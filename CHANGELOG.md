@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.3.0
+
+- Add custom labels: regex-based rules to rewrite link labels
+- Add option to hide scroll anchors in urls
+- Refactor settings panel
+
 ## 1.2.3
 
 - Add installation and usage instructions
