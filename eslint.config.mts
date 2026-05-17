@@ -22,6 +22,12 @@ export default tseslint.config(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ['tests/**/*.ts'],
+		rules: {
+			'obsidianmd/prefer-active-doc': 'off',
+		},
+	},
 	globalIgnores([
 		"node_modules",
 		"dist",
