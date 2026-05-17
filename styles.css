@@ -1,8 +1,28 @@
-/*
+/* Size custom label inputs */
+.pretty-urls-input[type="text"] {
+	flex-grow: 1;
+	flex-shrink: 1;
+	min-width: 6em;
+}
+/* Pattern and replacement inputs use monospace font */
+.pretty-urls-pattern-input[type="text"],
+.pretty-urls-replacement-input[type="text"] {
+	font-family: var(--font-monospace);
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.pretty-urls-rule-info {
+	flex-grow: 0;
+}
 
-If your plugin does not need CSS, delete this file.
+/* Status icon */
+.pretty-urls-status-icon {
+	display: inline-flex;
+	align-items: center;
+	cursor: default;
+	padding: 0 2px;
+}
 
-*/
+.pretty-urls-status-empty { color: var(--text-faint); }
+.pretty-urls-status-valid { color: var(--color-green); }
+.pretty-urls-status-warning { color: var(--color-orange); }
+.pretty-urls-status-invalid { color: var(--color-red); }

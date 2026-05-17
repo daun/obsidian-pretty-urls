@@ -1,8 +1,11 @@
+import {LabelRule, applyLabelRules} from './labels';
+
 export interface FormatterOptions {
 	stripWwwSubdomain: boolean;
 	stripWwwPlusSubdomain: boolean;
 	stripMobileSubdomain: boolean;
 	stripAmpSubdomain: boolean;
+	labelRules?: LabelRule[];
 	stripAnchor: boolean;
 }
 
@@ -39,6 +42,12 @@ export function prettyUrl(url: string, options: FormatterOptions = DEFAULT_FORMA
 
 	// Strip trailing slash from path-less URLs (e.g., "example.com/" -> "example.com")
 	url = url.replace(/^([^/]+)\/$/, '$1');
+
+	// Apply custom label rules (first-match-wins on post-stripped URL)
+	if (options.labelRules?.length) {
+		const label = applyLabelRules(url, options.labelRules);
+		if (label !== null) return label;
+	}
 
 	return url;
 }
