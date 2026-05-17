@@ -1,4 +1,4 @@
-import {App, PluginSettingTab, Setting, SettingGroup, ToggleComponent, sanitizeHTMLToDom, setIcon, setTooltip} from "obsidian";
+import {App, PluginSettingTab, SettingGroup, ToggleComponent, sanitizeHTMLToDom, setIcon, setTooltip} from "obsidian";
 import Plugin from "./main";
 import {LabelRule, DEFAULT_LABEL_RULES, looksExpensive} from "./labels";
 
