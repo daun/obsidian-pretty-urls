@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.2
+
+- Fix automated release provenance
+
 ## 1.2.1
 
 - Verify automated release provenance
