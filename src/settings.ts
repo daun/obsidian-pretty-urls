@@ -6,6 +6,7 @@ export interface PluginSettings {
 	stripWwwPlusSubdomain: boolean;
 	stripMobileSubdomain: boolean;
 	stripAmpSubdomain: boolean;
+	stripAnchor: boolean;
 	formatMetadata: boolean;
 }
 
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
 	stripWwwPlusSubdomain: true,
 	stripMobileSubdomain: true,
 	stripAmpSubdomain: true,
+	stripAnchor: false,
 	formatMetadata: false,
 }
 
@@ -75,6 +77,18 @@ export class MainSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.stripAmpSubdomain)
 					.onChange(async (value) => {
 						this.plugin.settings.stripAmpSubdomain = value;
+						await this.plugin.saveSettings();
+					}))
+			})
+
+		new SettingGroup(containerEl)
+			.setHeading('Hide parts')
+			.addSetting((setting) => { setting
+				.setName(this.format('<kbd>#anchor</kbd>'))
+				.addToggle(toggle => (toggle)
+					.setValue(this.plugin.settings.stripAnchor)
+					.onChange(async (value) => {
+						this.plugin.settings.stripAnchor = value;
 						await this.plugin.saveSettings();
 					}))
 			})
