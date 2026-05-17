@@ -188,6 +188,84 @@ describe('prettyUrl', () => {
 	});
 });
 
+describe('prettyUrl with labelRules', () => {
+	it('applies a matching label rule after stripping', () => {
+		const options: FormatterOptions = {
+			...DEFAULT_FORMATTER_OPTIONS,
+			labelRules: [{
+				id: 'test',
+				pattern: '^github\\.com/([^/]+)/([^/]+)/?$',
+				replacement: 'GitHub: $1/$2',
+				enabled: true,
+			}],
+		};
+		expect(prettyUrl('https://github.com/daun/obsidian-pretty-urls', options))
+			.toBe('GitHub: daun/obsidian-pretty-urls');
+	});
+
+	it('applies label rules to www-stripped URLs', () => {
+		const options: FormatterOptions = {
+			...DEFAULT_FORMATTER_OPTIONS,
+			labelRules: [{
+				id: 'test',
+				pattern: '^github\\.com/([^/]+)/([^/]+)/?$',
+				replacement: 'GitHub: $1/$2',
+				enabled: true,
+			}],
+		};
+		expect(prettyUrl('https://www.github.com/daun/repo', options))
+			.toBe('GitHub: daun/repo');
+	});
+
+	it('falls back to stripped URL when no rule matches', () => {
+		const options: FormatterOptions = {
+			...DEFAULT_FORMATTER_OPTIONS,
+			labelRules: [{
+				id: 'test',
+				pattern: '^github\\.com',
+				replacement: 'GitHub',
+				enabled: true,
+			}],
+		};
+		expect(prettyUrl('https://example.com/page', options)).toBe('example.com/page');
+	});
+
+	it('falls back to stripped URL when rule produces empty output', () => {
+		const options: FormatterOptions = {
+			...DEFAULT_FORMATTER_OPTIONS,
+			labelRules: [{
+				id: 'test',
+				pattern: '^example\\.com',
+				replacement: '   ',
+				enabled: true,
+			}],
+		};
+		expect(prettyUrl('https://example.com', options)).toBe('example.com');
+	});
+
+	it('skips disabled rules', () => {
+		const options: FormatterOptions = {
+			...DEFAULT_FORMATTER_OPTIONS,
+			labelRules: [{
+				id: 'test',
+				pattern: '^github\\.com',
+				replacement: 'GitHub',
+				enabled: false,
+			}],
+		};
+		expect(prettyUrl('https://github.com/x/y', options)).toBe('github.com/x/y');
+	});
+
+	it('behaves normally when labelRules is undefined', () => {
+		expect(prettyUrl('https://example.com', DEFAULT_FORMATTER_OPTIONS)).toBe('example.com');
+	});
+
+	it('behaves normally when labelRules is empty', () => {
+		const options: FormatterOptions = {...DEFAULT_FORMATTER_OPTIONS, labelRules: []};
+		expect(prettyUrl('https://example.com', options)).toBe('example.com');
+	});
+});
+
 describe('isExternalUrl', () => {
 	it('returns true for https URLs', () => {
 		expect(isExternalUrl('https://example.com')).toBe(true);

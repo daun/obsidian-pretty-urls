@@ -1,8 +1,14 @@
-/*
+/* Size custom label inputs */
+.pretty-urls-input[type="text"] {
+	flex-grow: 1;
+	flex-shrink: 1;
+	min-width: 6em;
+}
+/* Pattern input uses monospace font */
+.pretty-urls-pattern-input[type="text"] {
+	font-family: var(--font-monospace);
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.pretty-urls-rule-info {
+	flex-grow: 0;
+}
