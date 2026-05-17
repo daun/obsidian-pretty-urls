@@ -2,7 +2,7 @@
 	"id": "pretty-urls",
 	"name": "Pretty URLs",
 	"version": "1.1.0",
-	"minAppVersion": "0.15.0",
+	"minAppVersion": "1.11.0",
 	"description": "Improve display of URLs in reading view by removing https:// and www. prefixes.",
 	"author": "Philipp Daun",
 	"authorUrl": "https://github.com/daun",

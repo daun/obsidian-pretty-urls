@@ -18,14 +18,14 @@ function urlsMatchIgnoringTrailingSlash(url1: string, url2: string): boolean {
 }
 
 export function isUrlOnlyLink(node: Node): node is HTMLAnchorElement {
-	return node instanceof HTMLAnchorElement
+	return node.instanceOf(HTMLAnchorElement)
 		&& isExternalUrl(node.href)
 		&& urlsMatchIgnoringTrailingSlash(node.href, node.textContent ?? '')
 		&& node.childElementCount === 0;
 }
 
 export function isUrlOnlyMetadataLink(node: Node): node is HTMLDivElement {
-	return node instanceof HTMLDivElement
+	return node.instanceOf(HTMLDivElement)
 		&& node.dataset.href !== undefined
 		&& isExternalUrl(node.dataset.href)
 		&& urlsMatchIgnoringTrailingSlash(node.dataset.href, node.textContent ?? '')
