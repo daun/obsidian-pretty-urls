@@ -3,9 +3,7 @@
 **A plugin for [Obsidian](https://obsidian.md) to improve display of URLs**
 
 Remove common prefixes like `https://` and `www.` from links in
-[reading view](https://help.obsidian.md/edit-and-read#Reading+view).
-
-Useful if you can't be bothered to use markdown links and still want your notes to look
+[reading view](https://obsidian.md/help/edit-and-read#Reading+view). Useful if you can't be bothered to use markdown links and still want your notes to look
 clean. The plugin only affects the display of links – the actual note content remains
 unchanged.
 
@@ -36,9 +34,7 @@ unchanged.
 
 ## Usage
 
-No configuration needed — the plugin works automatically. Open any note in
-[reading view](https://help.obsidian.md/edit-and-read#Reading+view) and URLs will be
-displayed in their cleaned-up form.
+Open **Settings → Pretty URLs** to configure the plugin:
 
 ## License
 
